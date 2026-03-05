@@ -7,9 +7,9 @@ import { getSession } from "@/lib/api-auth";
 // GET /api/listings/:slug - Listing detail
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { slug } = await params;
+  const { id: slug } = await params;
 
   const result = await db
     .select({
@@ -77,9 +77,9 @@ export async function GET(
 // PATCH /api/listings/:slug - Update listing (owner only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { slug } = await params;
+  const { id: slug } = await params;
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -149,9 +149,9 @@ export async function PATCH(
 // DELETE /api/listings/:slug - Archive listing (soft delete)
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { slug } = await params;
+  const { id: slug } = await params;
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
