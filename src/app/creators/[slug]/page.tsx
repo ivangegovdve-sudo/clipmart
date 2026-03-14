@@ -11,10 +11,11 @@ export default async function CreatorProfilePage({
 }) {
   const { slug } = await params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // Optimized: Only fetch necessary fields for all creators to find matching slug
+  const allCreators = await db.select({ id: creators.id, displayName: creators.displayName }).from(creators);
+  const matchedCreatorRef = allCreators.find((entry) => slugify(entry.displayName) === slug);
 
-  if (!creator) {
+  if (!matchedCreatorRef) {
     return (
       <main className="mx-auto max-w-4xl px-4 py-20 sm:px-6">
         <div className="rounded-3xl border border-stone-300 bg-stone-50 p-8 text-center">
@@ -27,6 +28,9 @@ export default async function CreatorProfilePage({
       </main>
     );
   }
+
+  // Fetch full row for the matched creator
+  const [creator] = await db.select().from(creators).where(eq(creators.id, matchedCreatorRef.id)).limit(1);
 
   const publishedListings = await db
     .select()
