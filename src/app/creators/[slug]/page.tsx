@@ -11,8 +11,24 @@ export default async function CreatorProfilePage({
 }) {
   const { slug } = await params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // ⚡ Bolt: Fetch only identifiers to prevent O(N) memory/bandwidth bottleneck
+  const allCreators = await db.select({
+    id: creators.id,
+    displayName: creators.displayName,
+  }).from(creators);
+
+  const match = allCreators.find((entry) => slugify(entry.displayName) === slug);
+
+  let creator = null;
+  if (match) {
+    // ⚡ Bolt: Query the full row now that we have the matched ID
+    const result = await db
+      .select()
+      .from(creators)
+      .where(eq(creators.id, match.id))
+      .limit(1);
+    creator = result[0];
+  }
 
   if (!creator) {
     return (
