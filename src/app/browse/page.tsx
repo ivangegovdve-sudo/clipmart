@@ -1,8 +1,8 @@
 "use client";
 
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
 import { slugify } from "@/lib/slug";
 
 type ListingType =
@@ -156,7 +156,7 @@ function BrowseSkeleton() {
   );
 }
 
-export default function BrowsePage() {
+function BrowseContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -289,7 +289,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+    <>
       <section className="rounded-3xl border border-stone-300 bg-gradient-to-br from-stone-900 via-stone-900 to-amber-900 p-7 text-stone-100">
         <p className="text-xs uppercase tracking-[0.24em] text-stone-300">ClipMart Marketplace</p>
         <h1 className="mt-3 font-serif text-4xl">Browse listings</h1>
@@ -494,6 +494,21 @@ export default function BrowsePage() {
           </div>
         </section>
       )}
+    </>
+  );
+}
+
+export default function BrowsePage() {
+  // ⚡ Bolt Optimization:
+  // Wrapping the component that uses `useSearchParams()` in a `<React.Suspense>` boundary
+  // prevents the entire page from bailing out of Next.js static rendering.
+  // This allows the page shell to be statically generated and delivered instantly,
+  // drastically improving Time to First Byte (TTFB) and perceived load time.
+  return (
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+      <React.Suspense fallback={<BrowseSkeleton />}>
+        <BrowseContent />
+      </React.Suspense>
     </main>
   );
 }
