@@ -156,7 +156,9 @@ function BrowseSkeleton() {
   );
 }
 
-export default function BrowsePage() {
+import { Suspense } from "react";
+
+function BrowsePageContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -495,5 +497,13 @@ export default function BrowsePage() {
         </section>
       )}
     </main>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={null}>
+      <BrowsePageContent />
+    </Suspense>
   );
 }
