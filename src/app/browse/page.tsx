@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState, Suspense } from "react";
 import { slugify } from "@/lib/slug";
 
 type ListingType =
@@ -156,7 +156,7 @@ function BrowseSkeleton() {
   );
 }
 
-export default function BrowsePage() {
+function BrowseContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -495,5 +495,16 @@ export default function BrowsePage() {
         </section>
       )}
     </main>
+  );
+}
+
+
+// ⚡ Bolt: Wrapped BrowseContent in a Suspense boundary to prevent full-page client-side rendering bailouts.
+// This allows Next.js to statically generate the page up to the boundary, improving initial load time and performance.
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<BrowseSkeleton />}>
+      <BrowseContent />
+    </Suspense>
   );
 }
