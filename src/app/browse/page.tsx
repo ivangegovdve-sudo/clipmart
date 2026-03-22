@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { slugify } from "@/lib/slug";
 
 type ListingType =
@@ -156,7 +156,7 @@ function BrowseSkeleton() {
   );
 }
 
-export default function BrowsePage() {
+function BrowseContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -289,7 +289,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+    <>
       <section className="rounded-3xl border border-stone-300 bg-gradient-to-br from-stone-900 via-stone-900 to-amber-900 p-7 text-stone-100">
         <p className="text-xs uppercase tracking-[0.24em] text-stone-300">ClipMart Marketplace</p>
         <h1 className="mt-3 font-serif text-4xl">Browse listings</h1>
@@ -494,6 +494,22 @@ export default function BrowsePage() {
           </div>
         </section>
       )}
+    </>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+      {/*
+        ⚡ Bolt Performance Optimization:
+        Wrapping the component that uses `useSearchParams()` inside a `<React.Suspense>` boundary
+        prevents Next.js from bailing out of static rendering (CSR bailout) for the entire page.
+        This allows the outer layout/shell to be statically pre-rendered, improving TTFB and perceived load time.
+      */}
+      <React.Suspense fallback={<BrowseSkeleton />}>
+        <BrowseContent />
+      </React.Suspense>
     </main>
   );
 }
