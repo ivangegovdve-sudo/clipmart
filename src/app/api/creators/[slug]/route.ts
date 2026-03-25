@@ -10,8 +10,26 @@ export async function GET(
 ) {
   const { slug } = await context.params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // ⚡ Bolt: Fetch only id and displayName to minimize memory and database payload
+  // when finding the matching creator slug.
+  const allDisplayNames = await db
+    .select({
+      id: creators.id,
+      displayName: creators.displayName,
+    })
+    .from(creators);
+
+  const match = allDisplayNames.find((entry) => slugify(entry.displayName) === slug);
+
+  if (!match) {
+    return NextResponse.json({ error: "Creator not found" }, { status: 404 });
+  }
+
+  const [creator] = await db
+    .select()
+    .from(creators)
+    .where(eq(creators.id, match.id))
+    .limit(1);
 
   if (!creator) {
     return NextResponse.json({ error: "Creator not found" }, { status: 404 });
