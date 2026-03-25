@@ -10,12 +10,16 @@ export async function GET(
 ) {
   const { slug } = await context.params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // Optimized: Only fetch necessary fields for all creators to find matching slug
+  const allCreators = await db.select({ id: creators.id, displayName: creators.displayName }).from(creators);
+  const matchedCreatorRef = allCreators.find((entry) => slugify(entry.displayName) === slug);
 
-  if (!creator) {
+  if (!matchedCreatorRef) {
     return NextResponse.json({ error: "Creator not found" }, { status: 404 });
   }
+
+  // Fetch full row for the matched creator
+  const [creator] = await db.select().from(creators).where(eq(creators.id, matchedCreatorRef.id)).limit(1);
 
   const publishedListings = await db
     .select()
