@@ -10,8 +10,24 @@ export async function GET(
 ) {
   const { slug } = await context.params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // ⚡ Bolt: Fetch only identifiers to prevent O(N) memory/bandwidth bottleneck
+  const allCreators = await db.select({
+    id: creators.id,
+    displayName: creators.displayName,
+  }).from(creators);
+
+  const match = allCreators.find((entry) => slugify(entry.displayName) === slug);
+
+  if (!match) {
+    return NextResponse.json({ error: "Creator not found" }, { status: 404 });
+  }
+
+  // ⚡ Bolt: Query the full row now that we have the matched ID
+  const [creator] = await db
+    .select()
+    .from(creators)
+    .where(eq(creators.id, match.id))
+    .limit(1);
 
   if (!creator) {
     return NextResponse.json({ error: "Creator not found" }, { status: 404 });

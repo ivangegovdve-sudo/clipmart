@@ -1,0 +1,3 @@
+## 2026-03-15 - [Database queries & memory optimization]
+**Learning:** Fetching an entire database table (`db.select().from(table)`) to do JavaScript-side property matching (e.g., dynamically computing slugs from strings) leads to massive O(N) memory and bandwidth bottlenecks.
+**Action:** When matching needs to occur in JavaScript over an entire table, strictly fetch only the required identifier fields (like `id` and `displayName`) to locate the match, and *then* query the database for the single matching row using its `id`.
