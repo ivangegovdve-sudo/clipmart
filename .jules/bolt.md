@@ -1,0 +1,3 @@
+## 2026-03-19 - [Dynamically Computed Slugs Optimization]
+**Learning:** The database schema computes slugs dynamically from `displayName` instead of storing them in a `slug` column. Fetching the entire table (`db.select().from(creators)`) to match slugs client-side causes an O(N) memory and bandwidth bottleneck as the database grows.
+**Action:** Always fetch only identifier fields (like `id` and `displayName`) first to perform the slug matching. Once the correct `id` is found, execute a separate query to fetch the full row using the `id`. This applies to `creators` and any other tables using dynamically computed slugs.

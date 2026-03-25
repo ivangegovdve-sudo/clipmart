@@ -11,8 +11,35 @@ export default async function CreatorProfilePage({
 }) {
   const { slug } = await params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // Optimization: Only fetch identifiers to prevent O(N) memory/bandwidth bottleneck
+  const allCreators = await db
+    .select({
+      id: creators.id,
+      displayName: creators.displayName,
+    })
+    .from(creators);
+
+  const matchedCreatorInfo = allCreators.find(
+    (entry) => slugify(entry.displayName) === slug
+  );
+
+  if (!matchedCreatorInfo) {
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-20 sm:px-6">
+        <div className="rounded-3xl border border-stone-300 bg-stone-50 p-8 text-center">
+          <h1 className="font-serif text-3xl text-stone-900">Creator not found</h1>
+          <p className="mt-3 text-stone-600">No creator profile exists for this slug.</p>
+          <Link href="/browse" className="mt-5 inline-flex rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-stone-100">
+            Browse listings
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const creator = await db.query.creators.findFirst({
+    where: eq(creators.id, matchedCreatorInfo.id),
+  });
 
   if (!creator) {
     return (
