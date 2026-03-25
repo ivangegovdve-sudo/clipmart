@@ -4,6 +4,8 @@ import { creators } from "@/db/schema";
 import { slugify } from "@/lib/slug";
 import { desc } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export default async function CreatorsIndexPage() {
   const allCreators = await db.select().from(creators).orderBy(desc(creators.totalInstalls));
 
