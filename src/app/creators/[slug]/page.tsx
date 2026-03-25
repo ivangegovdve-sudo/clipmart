@@ -11,8 +11,15 @@ export default async function CreatorProfilePage({
 }) {
   const { slug } = await params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // ⚡ Bolt: Fetch only id and displayName to avoid loading the entire creators table into memory
+  // Expected Impact: Reduces O(N) memory allocation and DB bandwidth for the full row payload down to just two columns.
+  const allCreators = await db.select({ id: creators.id, displayName: creators.displayName }).from(creators);
+  const matchedCreatorRef = allCreators.find((entry) => slugify(entry.displayName) === slug);
+
+  const creatorResult = matchedCreatorRef
+    ? await db.select().from(creators).where(eq(creators.id, matchedCreatorRef.id)).limit(1)
+    : [];
+  const creator = creatorResult[0];
 
   if (!creator) {
     return (
