@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { slugify } from "@/lib/slug";
 
 type ListingType =
@@ -156,7 +156,7 @@ function BrowseSkeleton() {
   );
 }
 
-export default function BrowsePage() {
+function BrowseContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -495,5 +495,22 @@ export default function BrowsePage() {
         </section>
       )}
     </main>
+  );
+}
+
+export default function BrowsePage() {
+  // ⚡ Bolt Performance Optimization
+  // Wrap the content in React.Suspense to prevent full-page client-side rendering bailouts
+  // because the child component uses `useSearchParams()`.
+  // This allows Next.js to statically generate the shell of the page during build,
+  // significantly improving initial page load performance.
+  return (
+    <React.Suspense fallback={
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+        <BrowseSkeleton />
+      </main>
+    }>
+      <BrowseContent />
+    </React.Suspense>
   );
 }
