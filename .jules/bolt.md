@@ -1,0 +1,3 @@
+## 2024-05-24 - [Avoid O(N) memory and bandwidth bottlenecks in DB queries]
+**Learning:** The database schema relies on dynamically computing slugs from `displayName` (e.g., in the `creators` table) rather than storing a dedicated `slug` column. To prevent O(N) memory and bandwidth bottlenecks, always fetch only identifier fields (like `id` and `displayName`) for JavaScript-side slug matching before querying the full database row by ID.
+**Action:** When finding a record by slug where the slug is not a column, fetch only the required columns for slug computation (`id`, `displayName`), perform the `slugify` matching in JS, and then use the matched `id` to query the full record. This limits the data pulled from the database in the initial query.
