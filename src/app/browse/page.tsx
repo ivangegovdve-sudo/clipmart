@@ -156,7 +156,9 @@ function BrowseSkeleton() {
   );
 }
 
-export default function BrowsePage() {
+import { Suspense } from "react";
+
+function BrowseContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -289,7 +291,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+    <>
       <section className="rounded-3xl border border-stone-300 bg-gradient-to-br from-stone-900 via-stone-900 to-amber-900 p-7 text-stone-100">
         <p className="text-xs uppercase tracking-[0.24em] text-stone-300">ClipMart Marketplace</p>
         <h1 className="mt-3 font-serif text-4xl">Browse listings</h1>
@@ -494,6 +496,16 @@ export default function BrowsePage() {
           </div>
         </section>
       )}
+    </>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
+      <Suspense fallback={<BrowseSkeleton />}>
+        <BrowseContent />
+      </Suspense>
     </main>
   );
 }

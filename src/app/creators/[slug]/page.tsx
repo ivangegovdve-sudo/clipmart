@@ -11,8 +11,18 @@ export default async function CreatorProfilePage({
 }) {
   const { slug } = await params;
 
-  const allCreators = await db.select().from(creators);
-  const creator = allCreators.find((entry) => slugify(entry.displayName) === slug);
+  // ⚡ Bolt: Fetch only identifiers to find matching slug, avoiding O(N) memory/bandwidth transfer of full rows
+  const creatorRefs = await db.select({
+    id: creators.id,
+    displayName: creators.displayName,
+  }).from(creators);
+  const matchedRef = creatorRefs.find((entry) => slugify(entry.displayName) === slug);
+
+  let creator = null;
+  if (matchedRef) {
+    // Fetch full creator details now that we have the exact ID
+    [creator] = await db.select().from(creators).where(eq(creators.id, matchedRef.id));
+  }
 
   if (!creator) {
     return (
